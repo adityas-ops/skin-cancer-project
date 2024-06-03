@@ -1,15 +1,16 @@
 import axios from "axios";
-import React, { useState,useContext } from "react";
+import React, { useState,useContext, useEffect } from "react";
 import { ArrowUpTrayIcon, TrashIcon } from "@heroicons/react/24/outline";
 import Image from "next/image";
 import ImageContext from "@/provider/ImageProvider";
+import useDelay from '@/hooks/useDelay';
 
 
-const Home = ({setResult}) => {
+const Home = ({setResult,setLoading}) => {
 
   const {onFileChange,image,setImage,selectedFile,setSelectFile} = useContext(ImageContext)
 
-
+  const [delayedResult, setDelayedResult] = useState(null);
 
 //   const onFileChange = (event) => {
 //     setSelectedFile(event.target.files[0]);
@@ -21,15 +22,48 @@ const Home = ({setResult}) => {
 //     };
 //   };
 
+
+
+
   console.log(image, "image");
+  // const uploadFile = async () => {
+  //   try {
+  //     setLoading(true);
+  //     const formData = new FormData();
+
+  //       formData.append("file", selectedFile);
+  //     const response = await axios.post(
+  //       "http://127.0.0.1:8000/predict",
+  //       // "https://skin-cancer-apis.onrender.com/predict",
+  //       formData,
+  //       {
+  //         headers: {
+  //           "Content-Type": "multipart/form-data",
+  //         },
+  //       }
+  //     );
+
+  //     console.log(response?.data, "response");
+  //     setLoading(false);
+
+  //     if (!response) {
+  //       throw new Error("Failed to upload file");
+  //     }
+
+  //     console.log("final result --->", response?.data);
+  //       setResult(response?.data);
+  //   } catch (error) {
+  //     console.error("Error uploading file:", error);
+  //   }
+  // };
   const uploadFile = async () => {
     try {
+      setLoading(true);
       const formData = new FormData();
-
-        formData.append("file", selectedFile);
+      formData.append("file", selectedFile);
       const response = await axios.post(
-        // "http://127.0.0.1:8000/predict",
-        "https://skin-cancer-apis.onrender.com/predict",
+        "http://127.0.0.1:8000/predict",
+        // "https://skin-cancer-apis.onrender.com/predict",
         formData,
         {
           headers: {
@@ -39,17 +73,26 @@ const Home = ({setResult}) => {
       );
 
       console.log(response?.data, "response");
-
       if (!response) {
         throw new Error("Failed to upload file");
       }
 
       console.log("final result --->", response?.data);
-        setResult(response?.data);
+      setResult(response?.data);
+      setDelayedResult(response?.data);
     } catch (error) {
       console.error("Error uploading file:", error);
+    } finally {
+      setLoading(false);
     }
   };
+
+  useDelay(() => {
+    if (delayedResult) {
+      setResult(delayedResult);
+    }
+  }, 3000);
+
 
   return (
     <>
